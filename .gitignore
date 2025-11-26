@@ -20,3 +20,6 @@ CMakeUserPresets.json
 
 # Game Data
 id1/
+
+# Visual Studio Code
+.vscode
