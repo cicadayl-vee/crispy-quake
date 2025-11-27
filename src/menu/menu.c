@@ -1254,7 +1254,7 @@ void M_Options_Key(int k) {
 //=============================================================================
 /* CROSSHAIR MENU */
 
-#define CROSSHAIR_ITEMS 2
+#define CROSSHAIR_ITEMS 1
 
 int crosshair_cursor;
 
@@ -1307,7 +1307,6 @@ void M_CrosshairOptions_Draw(void) {
 
     M_Print(16, 32, "        Crosshair");
     M_Print(220, 32, str);
-    M_Print(16, 40, "        Back...");
 
     // cursor
     M_DrawCharacter(200, 32 + crosshair_cursor * 8, 12 + ((int) (realtime * 4) & 1));
@@ -1326,9 +1325,6 @@ void M_CrosshairOptions_Key(int k) {
             switch (crosshair_cursor) {
                 case 0:
                     M_AdjustSliders_CrosshairOptions(1);
-                    break;
-                case 1:
-                    M_Menu_Options_f();
                     break;
             }
             return;
