@@ -54,7 +54,8 @@ enum {
     m_lanconfig,
     m_gameoptions,
     m_search,
-    m_slist
+    m_slist,
+    m_crosshair
 } m_state;
 
 void M_Menu_Main_f(void);
@@ -75,6 +76,7 @@ void M_Menu_LanConfig_f(void);
 void M_Menu_GameOptions_f(void);
 void M_Menu_Search_f(void);
 void M_Menu_ServerList_f(void);
+void M_Menu_CrosshairOptions_f(void);
 
 void M_Main_Draw(void);
 void M_SinglePlayer_Draw(void);
@@ -94,6 +96,7 @@ void M_LanConfig_Draw(void);
 void M_GameOptions_Draw(void);
 void M_Search_Draw(void);
 void M_ServerList_Draw(void);
+void M_CrosshairOptions_Draw(void);
 
 void M_Main_Key(int key);
 void M_SinglePlayer_Key(int key);
@@ -113,6 +116,9 @@ void M_LanConfig_Key(int key);
 void M_GameOptions_Key(int key);
 void M_Search_Key(int key);
 void M_ServerList_Key(int key);
+void M_CrosshairOptions_Key(int key);
+
+extern cvar_t crosshair;
 
 qboolean m_entersound; // play after drawing a frame, so caching
                        // won't disrupt the sound
@@ -1008,7 +1014,7 @@ again:
 //=============================================================================
 /* OPTIONS MENU */
 
-#define OPTIONS_ITEMS 14
+#define OPTIONS_ITEMS 15
 
 #define SLIDER_RANGE 10
 
@@ -1018,7 +1024,7 @@ void M_Menu_Options_f(void) {
     key_dest = key_menu;
     m_state = m_options;
     m_entersound = true;
-    if (options_cursor == 13 && VID_IsFullscreenMode()) {
+    if (options_cursor == 14 && VID_IsFullscreenMode()) {
         options_cursor = 0;
     }
 }
@@ -1088,7 +1094,7 @@ void M_AdjustSliders(int dir) {
             Cvar_SetValue("lookstrafe", !lookstrafe.value);
             break;
 
-        case 13: // mouse grab
+        case 14: // mouse grab
             VID_ToggleMouseGrab();
             break;
     }
@@ -1168,9 +1174,11 @@ void M_Options_Draw(void) {
 
     M_Print(16, 128, "         Video Options");
 
+    M_Print(16, 136, "        Crispy Options");
+
     if (VID_IsWindowedMode()) {
-        M_Print(16, 136, "             Use Mouse");
-        M_DrawCheckbox(220, 136, VID_WindowedMouse());
+        M_Print(16, 144, "             Use Mouse");
+        M_DrawCheckbox(220, 144, VID_WindowedMouse());
     }
 
     // cursor
@@ -1202,6 +1210,9 @@ void M_Options_Key(int k) {
                 case 12:
                     M_Menu_Video_f();
                     break;
+                case 13:
+                    M_Menu_CrosshairOptions_f();
+                    break;
                 default:
                     M_AdjustSliders(1);
                     break;
@@ -1231,12 +1242,95 @@ void M_Options_Key(int k) {
             break;
     }
 
-    if (options_cursor == 13 && VID_IsFullscreenMode()) {
+    if (options_cursor == 14 && VID_IsFullscreenMode()) {
         if (k == K_UPARROW) {
-            options_cursor = 12;
+            options_cursor = 13;
         } else {
             options_cursor = 0;
         }
+    }
+}
+
+//=============================================================================
+/* CROSSHAIR MENU */
+
+#define CROSSHAIR_ITEMS 2
+
+int crosshair_cursor;
+
+void M_Menu_CrosshairOptions_f(void) {
+    key_dest = key_menu;
+    m_state = m_crosshair;
+    m_entersound = true;
+}
+
+void M_AdjustSliders_CrosshairOptions(int dir) {
+    S_LocalSound("misc/menu3.wav");
+
+    switch (crosshair_cursor) {
+        case 0: // crosshair
+            Cvar_SetValue("crosshair", !crosshair.value);
+            break;
+    }
+}
+
+void M_CrosshairOptions_Draw(void) {
+    float r;
+    qpic_t* p;
+
+    M_DrawTransPic(16, 4, Draw_CachePic("gfx/qplaque.lmp"));
+    p = Draw_CachePic("gfx/p_option.lmp");
+    M_DrawPic((320 - p->width) / 2, 4, p);
+
+    M_Print(16, 32, "        Crosshair");
+    M_DrawCheckbox(220, 32, crosshair.value);
+    M_Print(16, 40, "        Back...");
+
+    // cursor
+    M_DrawCharacter(200, 32 + crosshair_cursor * 8, 12 + ((int) (realtime * 4) & 1));
+}
+
+void M_CrosshairOptions_Key(int k) {
+    switch (k) {
+        case K_ESCAPE:
+        case K_BBUTTON:
+            M_Menu_Options_f();
+            break;
+
+        case K_ENTER:
+        case K_ABUTTON:
+            m_entersound = true;
+            switch (crosshair_cursor) {
+                case 0:
+                    M_AdjustSliders_CrosshairOptions(1);
+                    break;
+                case 1:
+                    M_Menu_Options_f();
+                    break;
+            }
+            return;
+
+        case K_UPARROW:
+            S_LocalSound("misc/menu1.wav");
+            crosshair_cursor--;
+            if (crosshair_cursor < 0)
+                crosshair_cursor = CROSSHAIR_ITEMS - 1;
+            break;
+
+        case K_DOWNARROW:
+            S_LocalSound("misc/menu1.wav");
+            crosshair_cursor++;
+            if (crosshair_cursor >= CROSSHAIR_ITEMS)
+                crosshair_cursor = 0;
+            break;
+
+        case K_LEFTARROW:
+            M_AdjustSliders_CrosshairOptions(-1);
+            break;
+
+        case K_RIGHTARROW:
+            M_AdjustSliders_CrosshairOptions(1);
+            break;
     }
 }
 
@@ -2897,6 +2991,9 @@ void M_Draw(void) {
         case m_slist:
             M_ServerList_Draw();
             break;
+        case m_crosshair:
+            M_CrosshairOptions_Draw();
+            break;
     }
 
     if (m_entersound) {
@@ -2968,6 +3065,9 @@ void M_Keydown(int key) {
         case m_slist:
             M_ServerList_Key(key);
             return;
+        case m_crosshair:
+            M_CrosshairOptions_Key(key);
+            break;
     }
 }
 

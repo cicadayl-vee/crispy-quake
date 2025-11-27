@@ -70,6 +70,8 @@ int hipweapons[4] = {HIT_LASER_CANNON_BIT, HIT_MJOLNIR_BIT, 4,
 //MED 01/04/97 added hipnotic items array
 qpic_t* hsb_items[2];
 
+cvar_t crosshair = {"crosshair", "0", true};
+
 void Sbar_MiniDeathmatchOverlay(void);
 void Sbar_DeathmatchOverlay(void);
 void M_DrawPic(int x, int y, qpic_t* pic);
@@ -249,6 +251,8 @@ void Sbar_Init(void) {
         rsb_ammo[1] = Draw_PicFromWad("r_ammomulti");
         rsb_ammo[2] = Draw_PicFromWad("r_ammoplasma");
     }
+
+    Cvar_RegisterVariable(&crosshair);
 }
 
 
@@ -847,6 +851,8 @@ void Sbar_DrawFace(void) {
     Sbar_DrawPic(112, 0, sb_faces[f][anim]);
 }
 
+extern vrect_t scr_vrect;
+
 /*
 ===============
 Sbar_Draw
@@ -855,6 +861,11 @@ Sbar_Draw
 void Sbar_Draw(void) {
     if (scr_con_current == vid.height)
         return; // console is full screen
+
+    if (crosshair.value)
+        Draw_Character(scr_vrect.x + scr_vrect.width / 2,
+                       scr_vrect.y + scr_vrect.height / 2,
+                       '+');
 
     if (sb_updates >= vid.numpages)
         return;
