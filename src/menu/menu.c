@@ -1269,7 +1269,12 @@ void M_AdjustSliders_CrosshairOptions(int dir) {
 
     switch (crosshair_cursor) {
         case 0: // crosshair
-            Cvar_SetValue("crosshair", !crosshair.value);
+            crosshair.value += dir;
+            if (crosshair.value < 0)
+                crosshair.value = 0;
+            if (crosshair.value > 2)
+                crosshair.value = 2;
+            Cvar_SetValue("crosshair", crosshair.value);
             break;
     }
 }
@@ -1278,12 +1283,30 @@ void M_CrosshairOptions_Draw(void) {
     float r;
     qpic_t* p;
 
+    char* str;
+
+    switch ((int)crosshair.value)
+    {
+        case 0:
+            str = "Off";
+            break;
+        case 1:
+            str = "Cross";
+            break;
+        case 2:
+            str = "Dot";
+            break;
+        default:
+            str = "";
+            break;
+    }
+
     M_DrawTransPic(16, 4, Draw_CachePic("gfx/qplaque.lmp"));
     p = Draw_CachePic("gfx/p_option.lmp");
     M_DrawPic((320 - p->width) / 2, 4, p);
 
     M_Print(16, 32, "        Crosshair");
-    M_DrawCheckbox(220, 32, crosshair.value);
+    M_Print(220, 32, str);
     M_Print(16, 40, "        Back...");
 
     // cursor
