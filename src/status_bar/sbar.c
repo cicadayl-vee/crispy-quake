@@ -862,10 +862,14 @@ void Sbar_Draw(void) {
     if (scr_con_current == vid.height)
         return; // console is full screen
 
-    if (crosshair.value)
-        Draw_Character(scr_vrect.x + scr_vrect.width / 2,
-                       scr_vrect.y + scr_vrect.height / 2,
+    if (crosshair.value == 1) // + crosshair
+        Draw_Character(scr_vrect.x + scr_vrect.width / 2 - 4,
+                       scr_vrect.y + scr_vrect.height / 2 - 4,
                        '+');
+    else if (crosshair.value > 1) // . crosshair
+        Draw_Character(scr_vrect.x + scr_vrect.width / 2 - 4,
+                       scr_vrect.y + scr_vrect.height / 2 - 4,
+                       15);
 
     if (sb_updates >= vid.numpages)
         return;
